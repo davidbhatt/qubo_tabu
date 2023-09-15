@@ -1,0 +1,3 @@
+This code is written to perform a tabu search using the following algorithm:
+Diversification-Driven Tabu Search (D2TS) for Unconstrained Binary Quadratic Programming
+The details of this algorithm can be found in
