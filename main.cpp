@@ -8,7 +8,7 @@
 #include <utility>
 #include <bits/stdc++.h>
 #include <chrono>
-#include <random>
+
 
 
 using namespace std;
@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
   int iter_max=0;
   int time_out=0; //milli seconds
 	int c=0; //tabu_tenure constant
-	srand(time(0));
   //parse arguments
   for(int i=1;i<argc;++i)
 	{
@@ -69,8 +68,8 @@ int main(int argc, char *argv[])
 	fill_qubo(inFile,val,nmin);
 	fclose(inFile);
 //set paramters  default values if not provided
-    if(iter_max==0) iter_max=20*nNodes; //T*:=max(500000,5000n) alpha no of moves /* set maximum number of iterations */
-	if(c==0) c=max(20,int(nNodes/100)); /* set tabu tenure constant */
+    if(iter_max==0) iter_max=20*nNodes; //T*:=max(500000,5000n) /* set maximum number of iterations */
+	if(c==0) c=max(20,nNodes/100); /* set tabu tenure constant */
 	if(time_out==0) time_out=200;
 //display paramters	
   cout<<"tabu_search will run using supplied file "<<inFileName <<" and "; 
@@ -84,17 +83,17 @@ int main(int argc, char *argv[])
 	int *best;
 	best= new int [nNodes+1];
  //4: Randomly generate an initial solution S0
-	//srand(time(NULL)); 
+	srand(time(NULL)); 
 	for (int i = 0; i < nNodes;i++) 
 	{
 	  sol[i]=rand()%2;
 	}
-	//cout<<endl;
+	cout<<endl;
 	
-	//srand(time(0));
+	srand(time(0));
 ///constants values from the paper
-	int R=8;  //R constant length of elite solution 
-	int gamma=int(nNodes/4);
+	int R=8;  //R constant 
+	int gamma=nNodes/4;
 	double beta=0.3;
 	double energy;  //function value
 	int its=0;  //iteration count for tabu

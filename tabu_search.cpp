@@ -10,8 +10,6 @@ using namespace std;
 void fchange(double **qubo,int *sol,int bit,int qubo_size,double *dxo);
 double local_search(int *sol, int qubo_size, double **qubo, int *flipfreq,double*dxo,double V);
 double evaluate(int *sol,double **qubo,int qubo_size);
-
-//local search function
 double local_search(int *sol, int qubo_size, double **qubo, int *flipfreq,double*dxo,double V)
 {
   bool improve=true;
@@ -56,17 +54,13 @@ double evaluate(int *sol,double **qubo,int qubo_size) //use for first or last ti
 void LowerTriangulize(double**qubo,int qubo_size)
 {
 		//make qubo matrix lower triangiular
-	for (int i = 0; i <qubo_size; ++i)
+	for (int i = 0; i <qubo_size; i++)
 	{
-		for (int j = 0; j < qubo_size; ++j)
+		for (int j = 0; j < i; j++)
 		{
-			if(i<j)
-			{
-				qubo[i][j]=qubo[i][j]+qubo[j][i];
-			}else if(i>j)
-			{
-			qubo[i][j]=0.0;
-			}
+			qubo[i][j]=qubo[i][j]+qubo[j][i];
+			qubo[j][i]=0.0;
+			
 		}
 	}
 }
@@ -115,8 +109,8 @@ double tabu_search(int *sol,int *best,int qubo_size, double **qubo, double *dxo,
   //energy V* is the best solution value found so far
   double benergy;//benergy V** is the best solution value associated with a neighbour of [Xi]
   int kmove=0; //flip variable
-	energy=evaluate(sol,qubo,qubo_size);
-//  for(int i=0;i<qubo_size;++i) TabuK[i]=0;//Li:=0 i=1,...,n /* initialise tabu values */
+
+  //for(int i=0;i<qubo_size;++i) TabuK[i]=0;//Li:=0 i=1,...,n /* initialise tabu values */
   benergy=1E100;   //V**:=-∞ /* initialise best neighbour value */
   its=0;
   while(its<iter_max)  /* iter_max* iterations in all */
@@ -132,7 +126,7 @@ double tabu_search(int *sol,int *best,int qubo_size, double **qubo, double *dxo,
 		{
 		  sol[k]=1-sol[k]; //flip
 	//	  cout<<k<<" th variable flipped"<<energy<<endl;
-		 flipfreq[k]++; /* record variable associated with the move */
+		  flipfreq[k]++; /* record variable associated with the move */
 		  kmove=k;
 		 // cout<<"energy before local search"<<energy<<endl;
 		  energy=local_search(sol, qubo_size, qubo,flipfreq, dxo,energy);  //make a local search irespective of tabu move
@@ -154,7 +148,7 @@ double tabu_search(int *sol,int *best,int qubo_size, double **qubo, double *dxo,
     }//end while
   // copy over the best solution
   for (int i = 0; i < qubo_size; i++) best[i] = sol[i];
-  energy=evaluate(best,qubo,qubo_size);
+  energy=evaluate(sol,qubo,qubo_size);
 	//cout<<"tabu_ended "<<its<<endl;
   
   return energy;

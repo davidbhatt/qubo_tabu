@@ -9,6 +9,7 @@
 #include <bits/stdc++.h>
 #include <chrono>
 
+
 using namespace std;
 
 bool present(vector <int*>vec,int *key, int n);
@@ -78,7 +79,7 @@ double D2ts_tabu(int *best,int *sol,double **qubo,int qubo_size,int R,double bet
 		{
 		//cout<<"1st loop sol not found in elite "<<isFound<<endl;
 		//8: Insert Sst into EliteSol: EliteSol = EliteSol + {Sst}
-		for(int j = 0; j < qubo_size;++j) elite[r][j]=best[j];
+		for(int j = 0; j < qubo_size;++j) elite[r][j]=sol[j];
 		elite_energy.push_back(energy);//store function v alue also
 		r++; //9: r = r + 1
 		//10: EliteFreq = EliteFreq + S*
@@ -95,17 +96,10 @@ double D2ts_tabu(int *best,int *sol,double **qubo,int qubo_size,int R,double bet
 		  //13: S0 = Perturbation_Operator(S’)
 	  //use best for storing S'
 	  for(int i=0;i<qubo_size;++i)best[i]=elite[isp][i];
-	  //cout<<"best sol"<<endl;
-	  //printsol(best,qubo_size);
-	 // cout<<"selection "<<isp<<" length of elite "<<r<<endl;
-     perturbation(sol,best,r,elitefreq,flipfreq,qubo_size,beta, gamma);
-	// cout<<"difference in perturbed sol"<<endl;
-	 //printsol(best,qubo_size);
-	 // for(int i=0;i<qubo_size;++i)cout<<best[i]-sol[i];
-	 // cout<<endl;
-	//random_perturbation(sol,best,qubo_size,qubo_size);
-    energy=evaluate(sol,qubo,qubo_size);  //update function value
-	//cout<<"sol after perturbations"<<endl;
+//      perturbation(sol,best,r,elitefreq,flipfreq,qubo_size,beta, gamma);
+	random_perturbation(sol,best,qubo_size,qubo_size);
+      energy=evaluate(sol,qubo,qubo_size);  //update function value
+	  //cout<<"sol after perturbations"<<endl;
 	//printsol(sol,qubo_size);
     }//14: end while
   
@@ -141,8 +135,6 @@ double D2ts_tabu(int *best,int *sol,double **qubo,int qubo_size,int R,double bet
 	  for (int i = 0; i < qubo_size; ++i) 
 	    {elitefreq[i]+=best[i]-worst[i];}
 	//cout<<maxEI<<" updated"<<endl;
-	 //for(int j = 0; j < R;++j)cout<<elite_energy[j]<<" ";
-	//cout<<endl;
 	}//23: end if
       //end time
       std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -150,12 +142,9 @@ double D2ts_tabu(int *best,int *sol,double **qubo,int qubo_size,int R,double bet
 	  it++;
 	  //    int minEI = std::min_element(elite_energy.begin(),elite_energy.end()) - elite_energy.begin();
 	 // cout<<it<<" time elasped= "<<etime<<" ms f(best_solution) so far = "<<elite_energy[minEI]<<endl;
-
-	}//24: end while
+    }//24: end while
   //get the best solutions so far found
     int minEI = std::min_element(elite_energy.begin(),elite_energy.end()) - elite_energy.begin();
-	//for(int j = 0; j < R;++j)cout<<elite_energy[j]<<" ";
-	//cout<<endl;
 	for(int j = 0; j < qubo_size;++j) best[j]=elite[minEI][j];
   //calculate the energy for last time 
   energy=evaluate(best,qubo,qubo_size);
@@ -193,15 +182,13 @@ else
 //int r current number of solutions recorder 0<r<R
 //beta Frequency-related weight in perturbation scoring
 //gamma first gamma critical values to be flipped
-void perturbation(int *sol,int *solp,int r,vector <int> elitefreq,int *flipfreq,int qubo_size,double beta, int gamma)
+void perturbation(int *sol,int*solp,int r,vector <int> elitefreq,int *flipfreq,int qubo_size,double beta, int gamma)
 {
   vector <double>score(qubo_size,0);
   //determine which bit to perturbation
   //score for all variables
   int maxfreq=*max_element(flipfreq , flipfreq + qubo_size);
-  //for(int i=0;i<qubo_size;++i)cout<<elitefreq[i]<<" ";
-  //cout<<endl;
-  for(int i=0;i<qubo_size;++i)score[i]=double(elitefreq[i])*double(r-elitefreq[i])/double(r*r)+beta*(1-double(flipfreq[i])/double(maxfreq));
+  for(int i=0;i<qubo_size;++i)score[i]=elitefreq[i]*(r-elitefreq[i])/(r*r)+beta*(1-flipfreq[i]/maxfreq);
 	//find maximum score  and variable to be flipped
  // double max_score=*std::max_element(score.begin(),score.end());
   //arrange in descending order of score
@@ -210,18 +197,11 @@ void perturbation(int *sol,int *solp,int r,vector <int> elitefreq,int *flipfreq,
   std::iota(V.begin(),V.end(),0); //Initializing
   //sort in decreasing value of scores
   sort( V.begin(),V.end(), [&](int i,int j){return score[i]>score[j];} ); //get variable list in descending order of score
-   // cout<<"scorer:"<<endl;
-  //for(int i=0;i<qubo_size;++i) cout<<score[V[i]]<<" ";
-    //cout<<endl;
   //perturbation step
-  //cout<<"perturbed indices:"<<endl;
-  //for(int i=0;i<gamma;++i) cout<<V[i]<<" "<<elitefreq[i]<<" ";
-  //cout<<endl;
   //flip first gamma variables form V list
   for(int i=0;i<gamma;++i)
     {
-		  sol[V[i]]=1-solp[V[i]];
-		flipfreq[i]++;	  
+      sol[V[i]]=1-solp[V[i]];
     }
 	/*cout<<"{";
 	for(int i=0;i<qubo_size;++i) cout<<elitefreq[i]<<", ";
@@ -229,12 +209,10 @@ void perturbation(int *sol,int *solp,int r,vector <int> elitefreq,int *flipfreq,
 	cout<<"before perturbation :";
 	for(int i=0;i<qubo_size;++i) cout<<solp[i];
 	cout<<endl;
-	
-	cout<<"difference in  perturbation in loop:"<<endl;
-	for(int i=0;i<qubo_size;++i) cout<<solp[i]-sol[i];
+		cout<<"after perturbation :";
+	for(int i=0;i<qubo_size;++i) cout<<sol[i];
 	cout<<endl;
 	*/
-	
 }
 void random_perturbation(int *sol,int*solp,int qubo_size,int gamma)
 {
@@ -250,8 +228,16 @@ void random_perturbation(int *sol,int*solp,int qubo_size,int gamma)
     {
       sol[V[i]]=1-solp[V[i]];
     }
-
-}
+	//cout<<"{";
+	//for(int i=0;i<qubo_size;++i) cout<<elitefreq[i]<<", ";
+	//cout<<"}"<<endl;
+/*	cout<<"before perturbation :";
+	for(int i=0;i<qubo_size;++i) cout<<solp[i];
+	cout<<endl;
+		cout<<"after perturbation :";
+	for(int i=0;i<qubo_size;++i) cout<<sol[i];
+	cout<<endl;*/
+	}
 	void printsol(int *sol, int qubo_size)
 	{
 		for(int i=0;i<qubo_size;++i) cout<<sol[i];
